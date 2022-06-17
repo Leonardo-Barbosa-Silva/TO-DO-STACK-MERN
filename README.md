@@ -1,2 +1,2 @@
-# TO-DO-STACK-MERN
-Project to do application by using the MERN stack development (MongoDB, ExpressJS, ReactJS, NodeJS).
+# TO-DO-MERN-STACK
+Projeto de listas de tarefas utilizando a stack MERN (MongoDB, ExpressJS, React, Nodejs).
