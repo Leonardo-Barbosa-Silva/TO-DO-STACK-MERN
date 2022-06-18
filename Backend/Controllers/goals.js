@@ -1,10 +1,12 @@
 const goalModel = require('../Models/goal.js')
+const userModel = require('../Models/user.js')
 
 module.exports = {
 
     async getGoals(req, res) {
         try {
-            const goals = await goalModel.find()
+            // Get goals of the user logged
+            const goals = await goalModel.find({ user: req.user })
 
             res.status(200).json({
                 message: 'Successfully GET goals',
@@ -24,6 +26,7 @@ module.exports = {
             }
 
             const createdGoal = await goalModel.create({
+                user: req.user,
                 text: req.body.text
             })
     
@@ -38,12 +41,27 @@ module.exports = {
 
     async updateGoal(req, res) {
         try {
-            const goal = await goalModel.find({ id: req.params.id })
+            // Check goal by the id passed in the params of req
+            const goal = await goalModel.findById(req.params.id)
 
             if (!goal) {
                 res.status(400).json({ error: 'Goal not found'})
+                return
             }
 
+            // Check the user who wants to update goal is the own of the goal
+            const user = await userModel.findById(req.user).select('-password')
+
+            if (!user) {
+                res.status(404).json({ error: 'User not logged' })
+            }
+
+            if(goal.user.toString() !== user.id) {
+                res.status(401).json({ error: 'Unauthorized user' })
+                return
+            }
+
+            // Update goal
             const updatedGoal = await goalModel.findByIdAndUpdate(req.params.id, req.body, { new: true })
 
             res.status(200).json({
@@ -62,6 +80,19 @@ module.exports = {
 
             if (!goal) {
                 res.status(400).json({ error: 'Goal not found'})
+                return
+            }
+
+            // Check the user who wants to delete goal is the own of the goal
+            const user = await userModel.findById(req.user).select('-password')
+
+            if (!user) {
+                res.status(404).json({ error: 'User not logged' })
+            }
+            
+            if(goal.user.toString() !== user.id) {
+                res.status(401).json({ error: 'Unauthorized user' })
+                return
             }
 
             await goal.remove()
